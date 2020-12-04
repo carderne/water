@@ -2,21 +2,20 @@
 <html lang="en">
     <head>
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
-        <title>Microbasins</title>
+        <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+        <title>Watersheds</title>
         <link href="vendor/mapbox-gl.css" rel="stylesheet" />
         <script src="vendor/mapbox-gl.js"></script>
         <link href="style.css" rel="stylesheet"/>
     </head>
-    <body>
+    <body style="background-image:url('https://log.rdrn.me/watersheds');">
         <div id="map"></div>
         <div id="controls">
-            <p>Click to calculate watershed</p>
-            <select name="dir" id="dir">
-                <option value="up" selected>Upstream</option>
-                <option value="down">Downstream</option>
-            </select>
+            <h1>Watersheds</h1>
+            <p>Click anywhere (on land) on the map to calculate the <a href="https://en.wikipedia.org/wiki/Drainage_basin">watershed</a> for that spot.</p>
+            <p><span style="color:#db0000">Red</span> is upstream and <span style="color:#2500db">blue</span> is downstream.</p>
+            <p>Basin data is from <a href="https://hydrosheds.org/">HydroSHEDS</a></p>
         </div>
-        <script src="secrets.js"></script>
         <script src="main.js"></script>
     </body>
 </html>

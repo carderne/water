@@ -1,4 +1,4 @@
-/* global mapboxgl MB_TOKEN MB_STYLE */
+/* global mapboxgl */
 
 const get = document.getElementById.bind(document);
 
@@ -10,24 +10,16 @@ mapboxgl.accessToken = MB_TOKEN;
 let map = new mapboxgl.Map({
   container: "map",
   style: MB_STYLE,
-  center: [0, 0],
-  zoom: 3,
+  center: [25, -27],
+  zoom: 4,
+  minZoom: 3,
+  maxZoom: 11,
 });
+map.getCanvas().style.cursor = 'pointer';
+map.dragRotate.disable();
+map.touchZoomRotate.disableRotation();
 
 map.on("load", () => {
-  map.addSource("watershed", {
-    type: "geojson",
-    data: { type: "FeatureCollection", features: [] },
-  });
-  map.addLayer({
-    id: "watershed",
-    type: "circle",
-    source: "watershed",
-    paint: {
-      "circle-radius": 10,
-      "circle-color": "#E97F35",
-    },
-  });
   map.on("click", (e) => {
     runQuery(e.lngLat.lng, e.lngLat.lat);
   });
@@ -35,14 +27,13 @@ map.on("load", () => {
 
 function runQuery(lon, lat) {
   console.log("coords", lon, lat);
-  let direc = get("dir").value;
-  console.log("direc", direc);
-  fetch(`http://168.119.239.10/${lon}/${lat}/${direc}`)
+  fetch(`https://watersheds.rdrn.me/${lon}/${lat}/`)
     .then((response) => response.json())
     .then((basins) => addToMap(basins));
 }
 
 function addToMap(basins) {
   console.log("basins", basins);
-  map.setFilter("hydrobasins", ["in", "HYBAS_ID"].concat(basins));
+  map.setFilter("basins_up", ["in", "HYBAS_ID"].concat(basins.up));
+  map.setFilter("basins_down", ["in", "HYBAS_ID"].concat(basins.down));
 }

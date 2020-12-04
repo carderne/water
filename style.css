@@ -12,8 +12,30 @@ html, body {
     position: fixed;
     top: 10px;
     left: 10px;
-    width: 200px;
+    max-width: 220px;
+    width: 100%;
     background: rgba(255, 255, 255, 0.8);
     padding: 10px;
-    font-size: 12px;
+}
+
+#controls > p {
+    font-size: 14px;
+}
+
+#controls > h1 {
+    font-size: 16px;
+    margin-top: 5px;
+}
+
+@media only screen and (max-width: 600px) {
+    #controls {
+        top: 0;
+        left: 0;
+        max-width: 100%;
+        padding: 5px;
+    }
+
+    #controls > * {
+        margin: 0;
+    }
 }
