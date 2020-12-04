@@ -1,0 +1,19 @@
+html, body {
+    font: 16pt arial;
+    margin: 0;
+}
+
+#map {
+    width: 100vw;
+    height: 100vh;
+}
+
+#controls {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    width: 200px;
+    background: rgba(255, 255, 255, 0.8);
+    padding: 10px;
+    font-size: 12px;
+}

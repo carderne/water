@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+        <title>Microbasins</title>
+        <link href="vendor/mapbox-gl.css" rel="stylesheet" />
+        <script src="vendor/mapbox-gl.js"></script>
+        <link href="style.css" rel="stylesheet"/>
+    </head>
+    <body>
+        <div id="map"></div>
+        <div id="controls">
+            <p>Click to calculate watershed</p>
+            <select name="dir" id="dir">
+                <option value="up" selected>Upstream</option>
+                <option value="down">Downstream</option>
+            </select>
+        </div>
+        <script src="secrets.js"></script>
+        <script src="main.js"></script>
+    </body>
+</html>
