@@ -4,11 +4,12 @@
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
         <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
         <title>Watersheds</title>
-        <link href="vendor/mapbox-gl.css" rel="stylesheet" />
-        <script src="vendor/mapbox-gl.js"></script>
-        <link href="style.css" rel="stylesheet"/>
+        <link rel='shortcut icon' type='image/x-icon' href=static/favicon.ico />
+        <link href="static/vendor/mapbox-gl.css" rel="stylesheet" />
+        <script src="static/vendor/mapbox-gl.js"></script>
+        <link href="static/style.css" rel="stylesheet"/>
     </head>
-    <body style="background-image:url('https://log.rdrn.me/watersheds');">
+    <body>
         <div id="map"></div>
         <div id="controls">
             <h1>Watersheds</h1>
@@ -16,6 +17,7 @@
             <p><span style="color:#db0000">Red</span> is upstream and <span style="color:#2500db">blue</span> is downstream.</p>
             <p>Basin data is from <a href="https://hydrosheds.org/">HydroSHEDS</a></p>
         </div>
-        <script src="main.js"></script>
+        <script src="static/defaults.js"></script>
+        <script src="static/main.js"></script>
     </body>
 </html>
