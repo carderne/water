@@ -2,15 +2,9 @@ node_modules/
 .eslintrc.json
 package.json
 package-lock.json
-benchmarking.ipynb
+*.ipynb
 data/
-
-
-node_modules/
-.serverless/
-.requirements.zip
-app/openelec
-app/clusterize
+stress
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

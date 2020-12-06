@@ -18,16 +18,71 @@ html, body {
     padding: 10px;
 }
 
-#controls > p {
-    font-size: 14px;
+#controls > div {
+    justify-content: center;
 }
 
-#controls > h1 {
-    font-size: 16px;
-    margin-top: 5px;
+#controls > div > * {
+    display: inline-block;
+    margin: 10px;
+    padding: 5px;
+    border-radius: 5px;
+}
+.red {
+    background-color: #fea5a1;
+}
+
+.blue {
+    background-color: #9aaee6;
+}
+
+#modal {
+    display: none;
+    position: fixed;
+    overflow: hidden;
+    background-color: rgba(0, 0, 0, 0.7);
+    left : 0;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    transition: opacity 0.15s ease-out, width 0s linear 0.15s, height 0s linear 0.15s;
+}
+
+#modal-inner {
+    margin: 0 auto;
+    width: 400px;
+    max-width: 90%;
+    background-color: white;
+    border-radius: 5px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    position: relative;
+    top: 50vh;
+    transform: translateY(-50%);
+    overflow-y: auto;
+}
+
+#modal-inner > div {
+    padding: 20px;
+}
+
+.exit {
+    color: #594c3d;
+    position: absolute;
+    right: 10px;
+    top: 5px;
+    font-size: 26px;
+    font-weight: lighter;
+}
+
+.exit:hover {
+    color: black;
+    cursor: pointer;
 }
 
 @media only screen and (max-width: 600px) {
+    html, body {
+        font: 12pt arial;
+    }
     #controls {
         top: 0;
         left: 0;
@@ -36,6 +91,10 @@ html, body {
     }
 
     #controls > * {
-        margin: 0;
+        margin: 7px;
+    }
+
+    #controls > div {
+        display: flex;
     }
 }

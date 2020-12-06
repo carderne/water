@@ -10,9 +10,9 @@ driver = G.driver("neo4j://localhost:7687", auth=("neo4j", PW))
 
 q = """
     MATCH (n:Basin)
-    WHERE n.HybasId = {idd}
-    OPTIONAL MATCH p1=(u)-[:down*]->(n)
-    OPTIONAL MATCH p2=(n)-[:down*]->(d)
+    WHERE n.HybasId = $idd
+    OPTIONAL MATCH (u)-[:down*]->(n)
+    OPTIONAL MATCH (n)-[:down*]->(d)
     RETURN n.HybasId+COLLECT(DISTINCT u.HybasId) AS up,
            n.HybasId+COLLECT(DISTINCT d.HybasId) AS down
     """
@@ -23,8 +23,7 @@ def index():
     return render_template("index.html")
 
 
-@app.route("/api/<idd>/")
+@app.route("/api/<int:idd>/")
 def api(idd):
     with driver.session() as s:
-        res = s.run(q.format(idd=idd)).data()
-    return jsonify({"up": res[0]["up"], "down": res[0]["down"]})
+        return jsonify(s.run(q, idd=idd).data()[0])
