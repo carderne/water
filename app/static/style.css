@@ -1,5 +1,5 @@
 html, body {
-    font: 16pt arial;
+    font: 1em arial;
     margin: 0;
 }
 
@@ -9,22 +9,29 @@ html, body {
 }
 
 #controls {
+    text-align: center;
     position: fixed;
     top: 10px;
     left: 10px;
-    max-width: 220px;
+    max-width: 240px;
     width: 100%;
     background: rgba(255, 255, 255, 0.8);
     padding: 10px;
 }
 
+#controls strong {
+    font-size: 1.4em;
+}
+
 #controls > div {
     justify-content: center;
+    margin: 0 auto;
 }
 
 #controls > div > * {
+    width: 90%;
     display: inline-block;
-    margin: 10px;
+    margin: 5px auto;
     padding: 5px;
     border-radius: 5px;
 }
@@ -81,7 +88,7 @@ html, body {
 
 @media only screen and (max-width: 600px) {
     html, body {
-        font: 12pt arial;
+        font: 0.9em arial;
     }
     #controls {
         top: 0;
@@ -90,8 +97,12 @@ html, body {
         padding: 5px;
     }
 
-    #controls > * {
-        margin: 7px;
+    #controls > div > * {
+        margin: 2px auto;
+    }
+
+    #controls > div > span {
+        width: 40%;
     }
 
     #controls > div {

@@ -3,7 +3,14 @@
     <head>
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
         <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
-        <title>Watersheds</title>
+        <meta name="description" content="An interactive map of upstream watersheds and downstream runoff.">
+        <meta property="og:type" content="website">
+        <meta property="og:locale" content="en_US">
+        <meta property="og:site_name" content="Watershed Explorer">
+        <meta property="og:title" content="Watershed Explorer">
+        <meta property="og:url" content="https://water.rdrn.me/">
+        <link rel="canonical" href="https://water.rdrn.me/">
+        <title>Watershed Explorer</title>
         <link rel='shortcut icon' type='image/x-icon' href=static/favicon.ico />
         <link href="static/vendor/mapbox-gl.css" rel="stylesheet" />
         <script src="static/vendor/mapbox-gl.js"></script>
@@ -11,16 +18,18 @@
     </head>
     <body>
         <div id="map"></div>
-        </div>
         <div id="controls">
-            <p>Click on the map to calculate the <a href="https://en.wikipedia.org/wiki/Drainage_basin">watershed</a> for that spot.</p>
+            <div>
+                <p><strong>Click to calculate a new watershed</strong></p>
+            </div>
+            <div>
+                <p><a href="https://rdrn.me/watershed-graph/">How does it work?</a></p>
+            </div>
             <div>
                 <span class="red">red = upstream</span>
                 <span class="blue">blue = downstream</span>
             </div>
-            <p>Basin data is from <a href="https://hydrosheds.org/">HydroSHEDS</a></p>
         </div>
-
         <div id="modal">
             <div id="modal-inner">
                 <span class="exit" id="exit">×</span>
