@@ -4,7 +4,6 @@ package.json
 package-lock.json
 *.ipynb
 data/
-stress
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
