@@ -17,7 +17,7 @@ const random = starters[Math.floor(Math.random() * starters.length)];
 const MB_TOKEN =
   "pk.eyJ1IjoiY2FyZGVybmUiLCJhIjoiY2puMXN5cnBtNG53NDN2bnhlZ3h4b3RqcCJ9.eNjrtezXwvM7Ho1VSxo06w";
 const MB_STYLE = "mapbox://styles/carderne/cki8lqpp99h9q19lrfvg1cy2g";
-const CONN_LIM = 200;
+const CONN_LIM = 500;
 
 mapboxgl.accessToken = MB_TOKEN;
 let map = new mapboxgl.Map({
@@ -38,28 +38,76 @@ map.addControl(
   "bottom-right"
 );
 map.addControl(new mapboxgl.NavigationControl(), "bottom-right");
+let geoloc = new mapboxgl.GeolocateControl({
+  fitBoundsOptions: {
+    maxZoom: 9,
+    linear: true,
+    easing: () => {
+      return 1;
+    },
+  },
+});
+map.addControl(geoloc);
+geoloc.on("geolocate", (p) => {
+  stylePointer("wait");
+  setTimeout(() => fireClick(p), 1000);
+});
+var marker = new mapboxgl.Marker({ scale: 0.7 }).setLngLat(random);
+disableClick();
+runQuery(random.idd, random, 0);
+
+get("exit").onclick = exitModal;
+get("modal").onclick = exitModal;
+function exitModal() {
+  get("modal").style.display = "none";
+}
+
+function fireClick(p) {
+  let lngLat = { lng: p.coords.longitude, lat: p.coords.latitude };
+  map.fire("click", {
+    lngLat: lngLat,
+    point: map.project(lngLat),
+    originalEvent: {},
+  });
+  setTimeout(() => stylePointer("pointer"), 1500);
+}
+
+function stylePointer(style) {
+  map.getCanvas().style.cursor = style;
+  queryAll(".mapboxgl-marker").forEach((q) => (q.style.cursor = style));
+  queryAll(".mapboxgl-ctrl-icon").forEach((q) => (q.style.cursor = style));
+}
 
 function enableClick() {
   map.on("click", "basins_transparent", handleClick);
-  map.getCanvas().style.cursor = "pointer";
-  queryAll(".mapboxgl-marker").forEach((q) => (q.style.cursor = "pointer"));
+  stylePointer("pointer");
 }
 
 function disableClick() {
   map.off("click", "basins_transparent", handleClick);
-  map.getCanvas().style.cursor = "wait";
-  queryAll(".mapboxgl-marker").forEach((q) => (q.style.cursor = "wait"));
+  stylePointer("wait");
 }
 
-var marker = new mapboxgl.Marker({ scale: 0.7 });
+function handleClick(e) {
+  console.log(e);
+  let idd = e.features[0].properties.HYBAS_ID;
+  let lngLat = e.lngLat;
+  let lng = parseFloat(lngLat.lng.toFixed(3));
+  let lat = parseFloat(lngLat.lat.toFixed(3));
+  console.log({ idd: idd, lng: lng, lat: lat });
+  runIfCan(idd, lngLat);
+}
 
-map.on("load", () => {
-  disableClick();
-  marker.setLngLat(random);
-  runIfCan(random.idd, random, true);
-});
+function runIfCan(idd, lngLat) {
+  fetch("https://water.rdrn.me/ac")
+    .then((res) => res.text())
+    .then((num_conn) => {
+      return runQuery(idd, lngLat, num_conn);
+    })
+    .catch(() => enableClick());
+}
 
-function runQuery(idd, lngLat, num_conn, fit) {
+function runQuery(idd, lngLat, num_conn) {
   if (num_conn > CONN_LIM) {
     get("modal").style.display = "block";
   } else {
@@ -67,42 +115,14 @@ function runQuery(idd, lngLat, num_conn, fit) {
     disableClick();
     fetch(`api/${idd}/`)
       .then((response) => response.json())
-      .then((basins) => addToMap(basins, lngLat, fit))
+      .then((basins) => addToMap(basins))
       .catch(() => enableClick());
   }
 }
 
-function addToMap(basins, lngLat, fit) {
+function addToMap(basins) {
   map.setFilter("basins_up", ["in", "HYBAS_ID"].concat(basins.up));
   map.setFilter("basins_down", ["in", "HYBAS_ID"].concat(basins.down));
   marker.addTo(map);
-  setTimeout(() => enableClick(), 2000);
-  if (fit)
-    setTimeout(
-      () => map.flyTo({ center: [random.lng, random.lat], zoom: random.zoom }),
-      2000
-    );
-}
-
-function handleClick(e) {
-  let idd = e.features[0].properties.HYBAS_ID;
-  let lngLat = e.lngLat;
-  let lng = parseFloat(lngLat.lng.toFixed(3));
-  let lat = parseFloat(lngLat.lat.toFixed(3));
-  console.log({ idd: idd, lng: lng, lat: lat });
-  runIfCan(idd, lngLat, false);
-}
-
-function runIfCan(idd, lngLat, fit) {
-  fetch("https://water.rdrn.me/ac")
-    .then((res) => res.text())
-    .then((num_conn) => {
-      return runQuery(idd, lngLat, num_conn, fit);
-    });
-}
-
-get("exit").onclick = exitModal;
-get("modal").onclick = exitModal;
-function exitModal() {
-  get("modal").style.display = "none";
+  setTimeout(enableClick, 2000);
 }
