@@ -1,4 +1,4 @@
-/* global mapboxgl */
+/* global mapboxgl turf */
 
 const get = document.getElementById.bind(document);
 const queryAll = document.querySelectorAll.bind(document);
@@ -89,7 +89,6 @@ function disableClick() {
 }
 
 function handleClick(e) {
-  console.log(e);
   let idd = e.features[0].properties.HYBAS_ID;
   let lngLat = e.lngLat;
   let lng = parseFloat(lngLat.lng.toFixed(3));
@@ -107,10 +106,12 @@ function runIfCan(idd, lngLat) {
     .catch(() => enableClick());
 }
 
+let lngLatStr;
 function runQuery(idd, lngLat, num_conn) {
   if (num_conn > CONN_LIM) {
     get("modal").style.display = "block";
   } else {
+    lngLatStr = lngLat.lng + "_" + lngLat.lat;
     marker.setLngLat(lngLat);
     disableClick();
     fetch(`api/${idd}/`)
@@ -120,9 +121,48 @@ function runQuery(idd, lngLat, num_conn) {
   }
 }
 
-function addToMap(basins) {
+let basins;
+function addToMap(b) {
+  basins = b;
   map.setFilter("basins_up", ["in", "HYBAS_ID"].concat(basins.up));
   map.setFilter("basins_down", ["in", "HYBAS_ID"].concat(basins.down));
-  marker.addTo(map);
-  setTimeout(enableClick, 2000);
+  setTimeout(enableClick, 4000);
+}
+
+function download() {
+  let feats = [];
+  for (let key in basins) {
+    let src = map.querySourceFeatures("composite", {
+      sourceLayer: "hydrobasins",
+      filter: ["in", "HYBAS_ID"].concat(basins[key]),
+    });
+    let fc = turf.featureCollection(
+      src.map((s) =>
+        turf.truncate(turf.feature(s.toJSON().geometry), { precision: 4 })
+      )
+    );
+    let fc2 = [];
+    fc.features.forEach((f) => {
+      if (f.geometry.type == "MultiPolygon") {
+        fc2.push.apply(fc2, turf.flatten(f).features);
+      } else {
+        fc2.push(f);
+      }
+    });
+    let un = turf.union.apply(this, fc2);
+    //un.geometry.coordinates.splice(1, un.geometry.coordinates[0].length - 1);
+    feats[key] = un;
+  }
+  let final = turf.featureCollection([feats.up, feats.down]);
+  let str = JSON.stringify(final);
+  let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(str);
+  let downloadAnchorNode = document.createElement("a");
+  downloadAnchorNode.setAttribute("href", dataStr);
+  downloadAnchorNode.setAttribute(
+    "download",
+    "basins_" + lngLatStr + ".geojson"
+  );
+  document.body.appendChild(downloadAnchorNode);
+  downloadAnchorNode.click();
+  downloadAnchorNode.remove();
 }
