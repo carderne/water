@@ -47,15 +47,22 @@ let geoloc = new mapboxgl.GeolocateControl({
     },
   },
 });
-map.addControl(geoloc);
+map.addControl(geoloc, "bottom-right");
+function trigger() {
+  geoloc.trigger();
+}
 geoloc.on("geolocate", (p) => {
   stylePointer("wait");
-  setTimeout(() => fireClick(p), 1000);
+  setTimeout(() => fireClick(p), 2000);
 });
-var marker = new mapboxgl.Marker({ scale: 0.7 }).setLngLat(random);
 disableClick();
-runQuery(random.idd, random, 0);
+var marker = new mapboxgl.Marker({ scale: 0.7 });
+map.on("load", () => {
+  marker.setLngLat(random).addTo(map);
+  runQuery(random.idd, random, 0);
+});
 
+get("geoloc").onclick = trigger;
 get("exit").onclick = exitModal;
 get("modal").onclick = exitModal;
 function exitModal() {
@@ -76,6 +83,8 @@ function stylePointer(style) {
   map.getCanvas().style.cursor = style;
   queryAll(".mapboxgl-marker").forEach((q) => (q.style.cursor = style));
   queryAll(".mapboxgl-ctrl-icon").forEach((q) => (q.style.cursor = style));
+  get("geoloc").style.cursor = style;
+  get("controls").style.cursor = style;
 }
 
 function enableClick() {
