@@ -8,6 +8,15 @@ html, body {
     height: 100vh;
 }
 
+#warning {
+    background: rgba(55, 55, 55, 0.15);
+}
+
+#warning > p {
+    margin: 0;
+    paddin: 0;
+}
+
 #controls {
     text-align: center;
     position: fixed;
@@ -15,7 +24,7 @@ html, body {
     left: 10px;
     max-width: 240px;
     width: 100%;
-    background: rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, 0.9);
     padding: 10px;
 }
 

@@ -10,21 +10,26 @@
         <meta property="og:title" content="Watershed Explorer">
         <meta property="og:url" content="https://water.rdrn.me/">
         <link rel="canonical" href="https://water.rdrn.me/">
-        <title>Watershed Explorer</title>
-        <link rel='shortcut icon' type='image/x-icon' href=static/favicon.ico />
-        <link href="static/vendor/mapbox-gl.css" rel="stylesheet" />
-        <script src="static/vendor/mapbox-gl.js"></script>
-        <script src="static/vendor/turf.min.js"></script>
-        <link href="static/style.css" rel="stylesheet"/>
+        <title>River Runoff (Up & Down)</title>
+        <link rel='shortcut icon' type='image/x-icon' href=favicon.ico />
+        <link href="vendor/mapbox-gl.css" rel="stylesheet" />
+        <script src="vendor/mapbox-gl.js"></script>
+        <script src="vendor/turf.min.js"></script>
+        <link href="style.css" rel="stylesheet"/>
     </head>
     <body>
         <div id="map"></div>
         <div id="controls">
-            <div>
-                <p><strong>Click to calculate a new watershed</strong></p>
+            <div id="warning">
+                <p style="color:red;font-weight:bold">Backend not running</p>
+                <p>Interactivity disabled, hit refresh to see a few examples!</p>
+                <p>Or click <a href="https://rdrn.me/watershed-graph/">here</a> to see a video (scroll down.)</p>
             </div>
             <div>
-                <p>Anywhere on the map, or click <button id="geoloc" style="padding:0 0">here</button> for <em>your</em> watershed!</p>
+                <p><strong>See which raindrops come past a point, and where they go from there</strong></p>
+            </div>
+            <div>
+                <p>Click anywhere on the map, or click <button id="geoloc" style="padding:0 0">here</button> for <em>your</em> watershed!</p>
             </div>
             <div>
                 <p><a href="https://rdrn.me/watershed-graph/">How does it work?</a></p>
@@ -44,6 +49,6 @@
                 </div>
             </div>
         </div>
-        <script src="static/main.js"></script>
+        <script type="module" src="main.js"></script>
     </body>
 </html>

@@ -1,17 +1,14 @@
 /* global mapboxgl turf */
 
+import starters from "./starters.js";
+
+const backendRunning = false;
+
 const get = document.getElementById.bind(document);
 const queryAll = document.querySelectorAll.bind(document);
 
-const starters = [
-  { idd: 1002291880, lng: 27.341, lat: -30.403, zoom: 5 },
-  { idd: 1001125440, lng: 24.341, lat: 0.769, zoom: 4 },
-  { idd: 7000039870, lng: -73.916, lat: 40.954, zoom: 6 },
-  { idd: 6000268020, lng: -65.668, lat: -2.646, zoom: 4 },
-  { idd: 7000575380, lng: -90.186, lat: 38.619, zoom: 5 },
-  { idd: 2000392040, lng: -0.11, lat: 51.494, zoom: 7 },
-  { idd: 3000991120, lng: 106.88, lat: 47.907, zoom: 3 },
-];
+if (backendRunning) get("warning").remove();
+
 const random = starters[Math.floor(Math.random() * starters.length)];
 
 const MB_TOKEN =
@@ -55,11 +52,17 @@ geoloc.on("geolocate", (p) => {
   stylePointer("wait");
   setTimeout(() => fireClick(p), 2000);
 });
-disableClick();
+
 var marker = new mapboxgl.Marker({ scale: 0.7 });
 map.on("load", () => {
   marker.setLngLat(random).addTo(map);
-  runQuery(random.idd, random, 0);
+  if (backendRunning) {
+    disableClick();
+    runQuery(random.idd, random, 0);
+  } else {
+    disableBackend();
+    addToMap(random.basins);
+  }
 });
 
 get("geoloc").onclick = trigger;
@@ -97,6 +100,11 @@ function disableClick() {
   stylePointer("wait");
 }
 
+function disableBackend() {
+  map.off("click", "basins_transparent", handleClick);
+  stylePointer("not-allowed");
+}
+
 function handleClick(e) {
   let idd = e.features[0].properties.HYBAS_ID;
   let lngLat = e.lngLat;
@@ -107,26 +115,34 @@ function handleClick(e) {
 }
 
 function runIfCan(idd, lngLat) {
-  fetch("https://water.rdrn.me/ac")
-    .then((res) => res.text())
-    .then((num_conn) => {
-      return runQuery(idd, lngLat, num_conn);
-    })
-    .catch(() => enableClick());
+  if (backendRunning) {
+    fetch("https://water.rdrn.me/ac")
+      .then((res) => res.text())
+      .then((num_conn) => {
+        return runQuery(idd, lngLat, num_conn);
+      })
+      .catch(() => enableClick());
+  } else {
+    console.log("Backend not running!");
+  }
 }
 
 let lngLatStr;
 function runQuery(idd, lngLat, num_conn) {
-  if (num_conn > CONN_LIM) {
-    get("modal").style.display = "block";
+  if (backendRunning) {
+    if (num_conn > CONN_LIM) {
+      get("modal").style.display = "block";
+    } else {
+      lngLatStr = lngLat.lng + "_" + lngLat.lat;
+      marker.setLngLat(lngLat);
+      disableClick();
+      fetch(`api/${idd}/`)
+        .then((response) => response.json())
+        .then((basins) => addToMap(basins))
+        .catch(() => enableClick());
+    }
   } else {
-    lngLatStr = lngLat.lng + "_" + lngLat.lat;
-    marker.setLngLat(lngLat);
-    disableClick();
-    fetch(`api/${idd}/`)
-      .then((response) => response.json())
-      .then((basins) => addToMap(basins))
-      .catch(() => enableClick());
+    console.log("Backend not running!");
   }
 }
 
@@ -135,9 +151,12 @@ function addToMap(b) {
   basins = b;
   map.setFilter("basins_up", ["in", "HYBAS_ID"].concat(basins.up));
   map.setFilter("basins_down", ["in", "HYBAS_ID"].concat(basins.down));
-  setTimeout(enableClick, 4000);
+  if (backendRunning) {
+    setTimeout(enableClick, 4000);
+  }
 }
 
+// eslint-disable-next-line
 function download() {
   let feats = [];
   for (let key in basins) {
