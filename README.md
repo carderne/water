@@ -11,21 +11,22 @@ It looks like this:
 This is not intended to let you set this up (it's probably not enough information) but for me to remember it!
 
 ## Neo4j
-Follow [these instructions](https://debian.neo4j.com/) for installing and running Neo4j on Debian/Ubuntu:
-```
-curl -fsSL https://debian.neo4j.com/neotechnology.gpg.key | sudo apt-key add -
-sudo add-apt-repository "deb https://debian.neo4j.com stable latest"
-sudo apt update
-sudo apt install neo4j
-sudo systemctl enable neo4j
+Start playing around with the base Docker image:
+```bash
+docker run \
+    --publish=7474:7474 --publish=7687:7687 \
+    --volume=$HOME/neo4j/data:/data \
+    neo4j
 ```
 
 You can log in to the database using `cypher-shell`, where the default username/password is `neo4j`/`neo4j` and you'll be prompted to create a new password. You can also load the web interface at (probably) [http://localhost:7474/browser/](http://localhost:7474/browser/).
 
-Neo4j data (on Ubuntu) lives in `/var/lib/neo4j/`. The default import location (for CSVs) is `/var/lib/neo4j/import` and the config file is at `/etc/neo4j/neo4j.conf`. I had to bump `dbms.memory.heap.max_size` to get the CSV import to work. Probably need to `sudo systemctl restart neo4j` to reload config.
+The default import location (for CSVs) is `/var/lib/neo4j/import` and the config file is at `/etc/neo4j/neo4j.conf`. I had to bump `dbms.memory.heap.max_size` to get the CSV import to work.
+
+The configs that do this are in [graph/](graph/).
 
 You can check that config has loaded:
-```
+```bash
 cypher-shell
 >>> CALL dbms.listConfig() YIELD name, value
     WHERE name STARTS WITH 'dbms.memory'
@@ -36,7 +37,7 @@ cypher-shell
 The river basin data comes from [HydroSHEDS](https://hydrosheds.org/). I downloaded the highest Pfafstetter level for all continents, merged them into a single layer, added min/max bounds as separate columns to each geometry, and then exported (without geometry) as a CSV.
 
 I also exported (with only geometry and basin ID) as `GeoJSON` and converted to MBTiles as follows:
-```
+```bash
 tippecanoe -o basins.mbtiles -Z4 -z7 -l basins -f basins.geojson
 ```
 
@@ -88,129 +89,31 @@ RETURN y,r
 
 Or look in [app/app.py](app/app.py) for the two queries used in the Flask app.
 
-## Dumping/loading data
-Since I built the graph on my local machine, I had to [dump the database and load](https://neo4j.com/docs/operations-manual/current/tools/dump-load/) it on the server.
-
-Dump:
-```
-sudo systemctl stop neo4j
-neo4j-admin dump --database=neo4j --to=./neo4j.dump
-sudo systemctl start neo4j
-```
-
-Load:
-```
-sudo systemctl stop neo4j
-sudo su - neo4j
-neo4j-admin load --from=/path/neo4j.dump --database=neo4j --force
-exit
-sudo systemctl start neo4j
-```
-
-## Flask app
+## FastAPI app
 Create a Python virtual environment:
-```
+```bash
 sudo apt install python3-pip python3-venv
 python3 -m venv ./venv/
 source ./venv/bin/activate
 ```
+
 Clone this repo:
-```
+```bash
 git clone https://github.com/carderne/water.git
 cd water
 pip install -r requirements.txt
 ```
 
 You can then run the Flask app as follows:
-```
-# Supply your Neo4j password
-NEO4J_PW=... FLASK_DEBUG=1 FLASK_APP=app/app.py flask run
-```
-
-Or with gunicorn:
-```
-gunicorn app.app:app
+```bash
+echo 'NEO4J_PW=<your-password>' > .env
+uvicorn app.app:app --port=5111 --reload
 ```
 
-The Flask app is at [app/app.py](app/app.py) and all HTML/JS/CSS is in [app/static/](app/static/).
-
-## systemd
-We need to serve over NGINX and use `systemd` to make sure gunicorn stays alive.
-
-Create `/etc/systemd/system/gunicorn.service`:
-```
-[Unit]
-Description=gunicorn daemon
-Requires=gunicorn.socket
-After=network.target
-
-[Service]
-Type=notify
-User=<user>
-Group=<user>
-RuntimeDirectory=gunicorn
-WorkingDirectory=/home/<user>/water
-Environment=NEO4J_PW=...
-ExecStart=/home/<water>/venv/bin/gunicorn app.app:app
-ExecReload=/bin/kill -s HUP $MAINPID
-KillMode=mixed
-TimeoutStopSec=5
-PrivateTmp=true
-
-[Install]
-WantedBy=multi-user.target
-```
-
-And `/etc/systemd/system/gunicorn.socket`:
-```
-[Unit]
-Description=gunicorn socket
-
-[Socket]
-ListenStream=/run/gunicorn.sock
-User=www-data
-
-[Install]
-WantedBy=sockets.target
-```
-
-Then run
-```
-systemctl daemon-reload
-sudo systemctl enable --now gunicorn.socket
-```
-
-
-## Nginx
-Install
-```
-sudo apt install nginx
-```
-
-And create a new config at `/etc/nginx/sites-available/water.rdrn.me`:
-```
-server {
-    server_name water.rdrn.me;
-    access_log /var/log/nginx/...;
-
-    location / {
-        proxy_pass http://unix:/run/gunicorn.sock;
-        include proxy_params;
-    }
-
-    location /ac {
-        return 200 $connections_active;
-        add_header Cache-Control no-store;
-    }
-}
-```
-
-This passes all traffic at `/` to the Flask/gunicorn app, and creates an additiohnal route `/ac` that provides information on how many connections Nginx is currently serving (we can use this in the frontend to manage overloading the server).
-
-Then run
-```
-sudo ln -s /etc/nginx/sites-available/water.rdrn.me /etc/nginx/sites-enabled/water.rdrn.me
-sudo systemctl restart nginx
+## Static site
+```bash
+cd static
+python3 -m http.server
 ```
 
 ## Stress testing
@@ -230,17 +133,13 @@ vegeta attack -duration=20s -targets=targs.txt -max-workers=100 -rate=0 | tee re
 cat results.bin | vegeta plot > plot.html
 ```
 
-## Log rotation for nginx
-Edit `/etc/logrotate/nginx`:
+## Deploying with fly.io
+First run all the instructions in [graph/README.md](graph/README.md).
+
+Then deploy the FastAPI app from this directory:
+```bash
+fly secrets set NEO4J_PW=<your-password-here>
+fly deploy
 ```
-/var/log/nginx/*.log {
-    monthly
-    dateext
-    dateyesterday
-    missingok
-    rotate 12
-    nocompress
-    notifempty
-    ...
-}
-```
+
+Then host a static site with the content from [static/](static/). (I'm currently doing this with Netlify.)

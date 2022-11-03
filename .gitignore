@@ -4,6 +4,7 @@ package.json
 package-lock.json
 *.ipynb
 data/
+graph/basins.csv
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
