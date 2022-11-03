@@ -123,7 +123,7 @@ function runQuery(idd, lngLat) {
     lngLatStr = lngLat.lng + "_" + lngLat.lat;
     marker.setLngLat(lngLat);
     disableClick();
-    fetch(`https://water.fly.dev/api/${idd}/`)
+    fetch(`//water.fly.dev/api/${idd}`)
       .then((response) => response.json())
       .then((basins) => addToMap(basins))
       .catch(() => enableClick());
