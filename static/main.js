@@ -2,7 +2,7 @@
 
 import starters from "./starters.js";
 
-const backendRunning = false;
+const backendRunning = true;
 
 const get = document.getElementById.bind(document);
 const queryAll = document.querySelectorAll.bind(document);
@@ -14,7 +14,6 @@ const random = starters[Math.floor(Math.random() * starters.length)];
 const MB_TOKEN =
   "pk.eyJ1IjoiY2FyZGVybmUiLCJhIjoiY2puMXN5cnBtNG53NDN2bnhlZ3h4b3RqcCJ9.eNjrtezXwvM7Ho1VSxo06w";
 const MB_STYLE = "mapbox://styles/carderne/cki8lqpp99h9q19lrfvg1cy2g";
-const CONN_LIM = 500;
 
 mapboxgl.accessToken = MB_TOKEN;
 let map = new mapboxgl.Map({
@@ -115,32 +114,19 @@ function handleClick(e) {
 }
 
 function runIfCan(idd, lngLat) {
-  if (backendRunning) {
-    fetch("https://water.rdrn.me/ac")
-      .then((res) => res.text())
-      .then((num_conn) => {
-        return runQuery(idd, lngLat, num_conn);
-      })
-      .catch(() => enableClick());
-  } else {
-    console.log("Backend not running!");
-  }
+  return runQuery(idd, lngLat);
 }
 
 let lngLatStr;
-function runQuery(idd, lngLat, num_conn) {
+function runQuery(idd, lngLat) {
   if (backendRunning) {
-    if (num_conn > CONN_LIM) {
-      get("modal").style.display = "block";
-    } else {
-      lngLatStr = lngLat.lng + "_" + lngLat.lat;
-      marker.setLngLat(lngLat);
-      disableClick();
-      fetch(`api/${idd}/`)
-        .then((response) => response.json())
-        .then((basins) => addToMap(basins))
-        .catch(() => enableClick());
-    }
+    lngLatStr = lngLat.lng + "_" + lngLat.lat;
+    marker.setLngLat(lngLat);
+    disableClick();
+    fetch(`https://water.fly.dev/api/${idd}/`)
+      .then((response) => response.json())
+      .then((basins) => addToMap(basins))
+      .catch(() => enableClick());
   } else {
     console.log("Backend not running!");
   }
