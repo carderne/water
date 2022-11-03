@@ -13,7 +13,7 @@ const random = starters[Math.floor(Math.random() * starters.length)];
 
 const MB_TOKEN =
   "pk.eyJ1IjoiY2FyZGVybmUiLCJhIjoiY2puMXN5cnBtNG53NDN2bnhlZ3h4b3RqcCJ9.eNjrtezXwvM7Ho1VSxo06w";
-const MB_STYLE = "mapbox://styles/carderne/cki8lqpp99h9q19lrfvg1cy2g";
+const MB_STYLE = "mapbox://styles/carderne/cla11ixv400bo15s2tpalhcis?fresh=true";
 
 mapboxgl.accessToken = MB_TOKEN;
 let map = new mapboxgl.Map({
@@ -23,6 +23,7 @@ let map = new mapboxgl.Map({
   zoom: random.zoom,
   minZoom: 2,
   maxZoom: 11,
+  projection: "globe",
 });
 map.dragRotate.disable();
 map.touchZoomRotate.disableRotation();

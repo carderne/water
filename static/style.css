@@ -10,6 +10,7 @@ html, body {
 
 #warning {
     background: rgba(55, 55, 55, 0.15);
+    display: none;
 }
 
 #warning > p {
@@ -45,11 +46,11 @@ html, body {
     border-radius: 5px;
 }
 .red {
-    background-color: #fea5a1;
+    background-color: #fdae61;
 }
 
 .blue {
-    background-color: #9aaee6;
+    background-color: #abd9e9;
 }
 
 #modal {
