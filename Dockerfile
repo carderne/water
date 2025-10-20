@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM python:slim-buster
+FROM python:3.14.0-slim-trixie
 
 WORKDIR /app
 COPY requirements.txt requirements.txt

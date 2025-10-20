@@ -7,8 +7,10 @@ from neo4j import GraphDatabase as G  # type: ignore[import]
 
 load_dotenv()
 
-PW = os.environ["NEO4J_PW"]
-driver = G.driver("neo4j+s://water-graph.fly.dev:7687", auth=("neo4j", PW))
+NEO4J_URL = os.environ["NEO4J_URL"]
+NEO4J_PW = os.environ["NEO4J_PW"]
+
+driver = G.driver(NEO4J_URL, auth=("neo4j", NEO4J_PW))
 
 
 q1 = """
