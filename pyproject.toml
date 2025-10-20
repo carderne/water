@@ -1,0 +1,24 @@
+[project]
+name = "water"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi>=0.119.1",
+    "neo4j>=6.0.2",
+    "requests>=2.32.5",
+    "uvicorn>=0.38.0",
+]
+
+[tool.pyright]
+venvPath = "."
+venv = ".venv"
+strict = ["**/*.py"]
+pythonVersion = "3.13"
+
+[dependency-groups]
+dev = [
+    "pyright>=1.1.406",
+    "ruff>=0.14.1",
+]
