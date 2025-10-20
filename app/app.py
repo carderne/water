@@ -1,17 +1,24 @@
 import os
 
+import requests
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from neo4j import GraphDatabase as G  # type: ignore[import]
 
 load_dotenv()
 
 NEO4J_URL = os.environ["NEO4J_URL"]
 NEO4J_PW = os.environ["NEO4J_PW"]
 
-driver = G.driver(NEO4J_URL, auth=("neo4j", NEO4J_PW))
+# Extract host from bolt:// URL or use directly if it's already http://
+if NEO4J_URL.startswith("bolt://"):
+    NEO4J_HTTP_URL = NEO4J_URL.replace("bolt://", "http://").replace(":7687", ":7474")
+elif NEO4J_URL.startswith("neo4j://"):
+    NEO4J_HTTP_URL = NEO4J_URL.replace("neo4j://", "http://").replace(":7687", ":7474")
+else:
+    NEO4J_HTTP_URL = NEO4J_URL
 
+CYPHER_ENDPOINT = f"{NEO4J_HTTP_URL}/db/neo4j/tx/commit"
 
 q1 = """
     MATCH (n:Basin)
@@ -36,9 +43,33 @@ app.add_middleware(
 )
 
 
+def run_cypher(query: str, params: dict):
+    payload = {
+        "statements": [
+            {
+                "statement": query,
+                "parameters": params
+            }
+        ]
+    }
+    
+    response = requests.post(
+        CYPHER_ENDPOINT,
+        json=payload,
+        auth=("neo4j", NEO4J_PW),
+        headers={"Content-Type": "application/json"}
+    )
+    response.raise_for_status()
+    
+    result = response.json()
+    if result.get("errors"):
+        raise Exception(result["errors"])
+    
+    return result["results"][0]["data"][0]["row"][0]
+
+
 @app.get("/api/{idd}")
 def api(idd: int):
-    with driver.session() as s:
-        up = s.run(q1, idd=idd).data()[0]["x"]
-        down = s.run(q2, idd=idd).data()[0]["x"]
+    up = run_cypher(q1, {"idd": idd})
+    down = run_cypher(q2, {"idd": idd})
     return {"up": up, "down": down}
